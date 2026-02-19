@@ -70,7 +70,7 @@ class TTC_line():
         
     def getDelayRecord(self, year):
       
-        if self.delay_record[year]:
+        if year in self.delay_record:
             return self.delay_record[year]
         
         else:
