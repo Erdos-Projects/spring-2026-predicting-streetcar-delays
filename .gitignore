@@ -3,3 +3,6 @@
 
 ## intermediate data notebooks
 schedule_weather_sunday_period_*
+
+## testing the reprocessing data 
+t_schedule_*.csv
