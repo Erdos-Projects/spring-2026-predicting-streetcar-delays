@@ -1,5 +1,4 @@
 date,No. of Veh,Service interval,Run time (min),Term time (min),Avg. spd (km/h),Time of Day (morning: 0-late evening: 4)*,Weekday=0/Sat=1/Sun=2,RT dist (km),Interruption,time period start,time period end,EB/WB,bunch,total delay,gap
-object,object,object,object,object,object,object,object,object,object,object,object,object,object,object,object
 str,int64,str,int64,int64,float64,int64,int64,float64,int64,datetime64[us],datetime64[us],str,int64,float64,int64
 2025-01-05,14,10:00,123,17,14.7,4,2,30.13,0,2025-01-05 22:00:00,2025-01-06 04:00:00,E,50,1038.8166666666666,8
 2025-01-05,14,10:00,123,17,14.7,4,2,30.13,0,2025-01-05 22:00:00,2025-01-06 04:00:00,W,3,171.51666666666665,45
