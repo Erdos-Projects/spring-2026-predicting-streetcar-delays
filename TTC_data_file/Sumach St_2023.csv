@@ -1,6 +1,0 @@
-,Time,Vehicle,Gap,Headway,Schedule,Destination,day,day of the week,stop,stopID
-0,12:25:16PM - 12:25:46PM,8849,,9:00,1:29 behind 12:23:47PM,East to Castle Frank Station,2023-01-04,2,Sumach St,6451
-1,1:56:05PM,8849,1:30:19,9:00,2:10 behind 1:53:55PM,East to Castle Frank Station,2023-01-04,2,Sumach St,6451
-2,2:06:23PM,8820,10:18,9:00,5:24 ahead of 2:11:47PM,East to Castle Frank Station,2023-01-04,2,Sumach St,6451
-3,2:24:04PM,8664,17:41,9:00,3:26 behind 2:20:38PM,East to Castle Frank Station,2023-01-04,2,Sumach St,6451
-4,3:23:21PM,8849,59:17,9:00,0:34 behind 3:22:47PM,East to Castle Frank Station,2023-01-04,2,Sumach St,6451
