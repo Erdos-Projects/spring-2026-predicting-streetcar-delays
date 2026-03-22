@@ -12,13 +12,14 @@ that we call **bunching events**, motivated by [a pilot program by the TTC](http
 We focus specifically on route 506, a busy east-west streetcar line that gives a representative of traffic congestion in Toronto. 
 
 ## Data Description
-
+Raw data can be found in [raw_data](raw_data/)
 
 1. **Streetcar Scheduling Data**: collected by scraping from [TransSee](https://www.transsee.ca/), which contains historical and up-to-date real time information about TTC vehicles. Data was collected per stop on the 506 line from 2024-07-30 to 2026-02-27. For each stop, direction, and vehicle, the dataset includes both scheduled and observed service information including: actual arrival time along with minutes ahead or behind schedule, scheduled headway between vehicles (corresponding to the expected time of arrival of subsequent vehicles at a stop), and the observed headway (the time difference between consecutive streetcar arrivals at a stop)
 
 2. **Weather Data**: provided by [Weatherstats Canada](https://toronto.weatherstats.ca/download.html), based on Environment and Climate Change Canada, containing daily weather information for the time period scraped by TransSee. 
 
 #### Data Processing
+Notebooks for processing data found in [data_processing](data_processing/) and the processed data can be found in [data/schedule_data](data/schedule_data/).
 
 We aggregate the raw data into a daily, stop-level data set. For each (date, stop, direction) combination, we compute: 
 - `bunch`: number of incidents where the space between two streetcars was less than 2 minutes. 
@@ -36,6 +37,7 @@ We removed data points where there are long stretches of missing data points. We
 Weather data points are merged by date, and for the amount of snow on the ground, we set missing values to 0. 
 
 ## Modelling Approach 
+Notebooks for training and testing the models can be found in [models](models/). 
 
 The modelling approach in this project uses both **linear regression** and **XGBoost** to examine the relationship between operational and environmental features and accumulated delay time. 
 
@@ -49,6 +51,7 @@ While **XGBoost** is likely to improve predictive accuracy/performance, it is le
 
 #### Target Variable: 
 We separate the accumulated delay times daily at each stop into the categories of short delays and long delays to capture two different dynamics. For our model we focus on short delay times in order to better capture the different factors that impact minor daily inefficiencies. 
+
 #### Feature Selection: 
 During model selection/development, we considered different subsets of the features and compared the performance.
 
