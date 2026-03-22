@@ -1,136 +1,80 @@
-# spring-2026-predicting-streetcar-delays
-Team project: spring-2026-predicting-streetcar-delays
-# Route 506 Streetcar Bunching vs Delay Overview
+# Predicting and Understanding Streetcar Delays in Toronto 
+This is a project hosted by the Erdos institute's [Data Science Boot camp](https://www.erdosinstitute.org/programs/spring-2026/data-science-boot-camp), which we completed in around a 6 week period.
 
-## 1. Objective: 
+## Introduction/Motivation/Overview
 
-The primary goal is to understand the relationship between **streetcar bunching incidents** and **accumulated delay time** on TTC route 506. 
+According to [this Urgency Statement](https://www.toronto.ca/legdocs/mmis/2025/ttc/bgrd/backgroundfile-253360.pdf) by the Toronto Transit Commission (TTC), the TTC is in urgent need for improvement. Annually, the TTC carries over 1.4 million trips a day, 70% of which consist of bus and streetcars. One important point that the statement brings up is the rising cost of congestion on the TTC, with an estimated 60 million dollars in cost for the TTC since 2019. 
 
-In particular, we investigate the impact of bunching incidents on delay times while controlling for: 
-- **time of day**
-- **time of week** (Weekday, Saturday, or Sunday) 
+It is well known that streetcars for the TTC in particular are dreadfully slow. For example, the [following application](https://ttcleaderboard.vercel.app/) shows a live preview of streetcars in operation, as a criticism of the slow service of our vehicles. This has been on the public mindset recently, as the Fifa world cup is set to happen in Toronto this summer, [causing concerns on how the TTC will address these congestion problems](https://globalnews.ca/news/11580546/toronto-world-cup-traffic-impact/).
 
+In this project, we look at the effect of gridlocked streetcars (that we call **bunching events**) on delay time.  We focus specifically on route 506, a busy east-west streetcar line that gives a representative of traffic congestion in Toronto. 
 
--- 
-
-### What is a bunching incident? 
-
-A **bunching incident** occurs when two streetcars on the same route travel too closely together instead of maintaining even spacing along the route. 
-
-In contrast, a **gapping incident** occurs when the time between consecutive streetcars becomes unusually large.
-
-For Route 506: 
-
-- The **scheduled headway** between vehicles is approximately 10 minutes. 
-
-- This means ideally, vehicles should arrive at stops in 10 minute intervals. 
-
-- A **bunching incident** occurs when the **actual headway** between two vehicles becomes much smaller than the **scheduled headway**. 
-
-- For this analysis, a bunching incident is defined as 
-> **ACTUAL HEADWAY < X minutes**
-
-### Why bunching matters? 
-
-Bunching often starts a cascade of problems which impact operations along an entire transit route. 
-
-A typical sequence of events is:
-
-1. A bunching incident occurs.
-2. The gap to the following vehicle increases.
-3. More passengers accumulate at the stops in between.
-4. Boarding times increase due to congestion.
-5. The following vehicle has fewer passengers and travels faster.
-6. More vehicles begin to bunch and the cycle continues. 
-
-This creates two major service problems: 
-- **Increased wait times** for passengers in the gaps
-- **Congestion and overcrowding** for the vehicles arriving after the gap
-
-As a result, even when vehicles arrive exactly at the scheduled time, if there is poor headway adherance the service feels unreliable for the passenger.  
+## Data Description
 
 
-### Research Question
+1. **Streetcar Scheduling Data**: collected by scraping from [TransSee](https://www.transsee.ca/), which contains historical and up-to-date real time information about TTC vehicles. Data was collected per stop on the 506 line from 2024-07-30 to 2026-02-27. For each stop, direction, and vehicle, the dataset includes both scheduled and observed service information including: actual arrival time along with minutes ahead or behind schedule, scheduled headway between vehicles (corresponding to the expected time of arrival of subsequent vehicles at a stop), and the observed headway (the time difference between consecutive streetcar arrivals at a stop)
 
-This analysis addresses the following question:
+2. **Weather Data**: provided by [Weatherstats Canada](https://toronto.weatherstats.ca/download.html), based on Environment and Climate Change Canada, containing daily weather information for the time period scraped by TransSee. 
 
-> **How does the number of bunching incidents affect accumulated delay time on Route 506?**
+#### Data Processing
 
-In particular, we aim to quantify the relationship between bunching and delay in order to estimate:
+We aggregate the raw data into a daily, stop-level data set. For each (date, stop, direction) combination, we compute: 
+- `bunch`: number of incidents where the space between two streetcars was less than 2 minutes. 
+- `gap`: number of incidents where the space between two streetcars was more than 19 minutes. 
+- `dt_short`: the total accumulated minutes of cars that were delayed between 5 minutes and 19 minutes (the 'non-extreme' delays).
+- `dt_long`: the total accumulated minutes of cars that were delayed over 19 minutes (the 'extreme' delays).
 
-- how delay increases as bunching increases
-- how reducing bunching might improve service reliability
+Bunch and gap periods were chosen due to a recent [Pilot study](https://www.toronto.ca/legdocs/mmis/2025/ttc/bgrd/backgroundfile-259672.pdf) on these types of incidents affecting punctuality. As well, `dt_short` is chosen to account for these 'non-punctual' and 'non-extreme' delays.
 
-## 2. The Data
+We removed data points where there are long stretches of missing data points. We also remove extremely large gaps (longer than 2 hours), as this suggests a cancellation rather than a delay. 
+ 
+Weather data points are merged by date, and for the amount of snow on the ground, we set missing values to 0. 
 
-This data comes from TTC. 
+## Modelling Approach 
 
-Each entry provides different service statistics related to the 506 streetcar line for a specified time period on a given day.  
+The modelling approach in this project uses both **linear regression** and **XGBoost** to examine the relationship between operational and environmental features and accumulated delay time. 
 
-To model the relationship we use data for dates in the range:
- ==START DATE - END DATE== 
+The focus of our approach is not only on predictive accuracy, but also on interpretability. One central goal is to use the model results to understand the potential impact of reducing bunching and improving operations. 
 
+**Linear regression** was chosen as a primary modelling approach because it gives an interpretable framework for quantifying relationships within the data. In particular, it allows us to estimate the effect of bunching incidents on accumulated delay time and compare the relative importance of different features. Additionally, linear regression gives results that can be easily communicated to non-technical stakeholders and policymakers. 
 
-## Key Variables
+For comparison, we also consider an **XGBoost model** using the same targets and features. We use **SHAP values** to examine feature importance and for interpretability of the model.
 
-The primary goal of this analysis is to study the relationship between **number of bunching incidents** and **total accumulated delay time**. 
+While **XGBoost** is likely to improve predictive accuracy/performance, it is less directly interpretable so we include both in our final analysis. 
 
-We also include **gapping** as a variable in our analysis because **bunching** and **gapping** are closely related operational features. A bunch is often followed by a gap or vice versa, and so together they both influence the spacing between vehicles along the route. However, the main focus of this analysis will remain on **bunching incidents**.
+#### Target Variable: 
+We separate the accumulated delay times daily at each stop into the categories of short delays and long delays to capture two different dynamics. For our model we focus on short delay times in order to better capture the different factors that impact minor daily inefficiencies. 
+#### Feature Selection: 
+During model selection/development, we considered different subsets of the features and compared the performance.
 
+Additionally, exploratory data analysis showed that delay variables showed high variance and non-linear relationships when compared to bunching. To address this, we evaluated the models with several logarithmic transformations of the number of bunching incidents and the delay times for both long and short delays: 
 
-A similar modeling framework could also be used to study the relationship between **gapping** and **delay**.
+delay ~ bunch + features
 
-| Variable | Description |
-|--------|-------------|
-| **`bunch`** | A count of the number of bunching incidents that occurred within the specified time period. |
-| **`gap`** | A count of the number of gapping incidents that occurred within the specified time period. |
-| **`total delay`** | Sum of the total accumulated delay time (in minutes) for all streetcars on the route during the same time period. |
+delay ~ log(bunch) + features
 
-In this analysis, **bunching** will be treated as the main variable of interest. 
+log(delay) ~ log(bunch) + features
 
-Initial analysis shows that there is a positive correlation between the number of bunching and gapping incidents in a given time period. To avoid potential problems with colinearity we will not include **gapping** as a feature in the model. 
+#### Validation strategy: 
+To compare model performance and avoid time leakage, we used a **time series cross validation** approach. The training data was split into 5 chronological folds preserving the time ordering of the data. 
 
+After choosing the transformations that performed the best we applied **Lasso and Ridge regression** to those models. However, this didn't significantly improve performance. Additionally, removing subsets of the features resulted in only minor changes in performance. Together, these suggest that the model is stable with the selected features. For this reason, we chose to keep the unregularized models with the full feature set.
 
-## Additional Variables
+## Results
 
-To account for predictable variations in service along the route, we also include the following variables. 
+| Model    | $RMSE$ | $R^2$ |
+| -------- | ------ | ----- |
+| baseline | 90.77  | 0.09  |
+| xgboost  | 72.0   | 0.43  |
+| ols      | 73.32  | 0.41  |
 
+Here the baseline predicts the mean delay at each stop in each direction. The Final $R^2$ score of our model came out to around 42% for both the XGBoost and linear regression model compared to 9% for a baseline model. Although predicting net delay time from just this information is quite volatile, our results demonstrate that there is some predictive power in using bunch events to predict delay times. Our RMSE also went down from the baseline by 20%, showing a tighter margin for error in those predictions best described by our model. 
 
-
-| Variable | Description |
-|----------|-------------|
-| **`weekday`** | Categorical variable indicating the **type of day** 
-| **`time_period`** | Categorical variable indicating the **time of day service block** for the entry.|  
-
-
-The `weekday` variable is interpreted as:
-
-- **0** = Weekday  
-- **1** = Saturday  
-- **2** = Sunday  
-
-
-The `time_period` variable divides the service day into five consecutive blocks determined by TTC defines time periods which are encoded as follows:  
-
-For Weekdays: 
-| `time_period` | Approximate interval | Description |
-|---------------|----------------------|-------------|
-| **0** | 4:00 AM - 9:00 AM | morning peak |
-| **1** | 9:00 AM - 3:00 PM | midday |
-| **2** | 3:00 PM - 7:00 PM | afternoon peak|
-| **3** | 7:00 PM - 10:00 PM | early evening |
-| **4** | 10:00 PM - 4:00 AM | late evening |
-
-For Saturday and Sunday:
-| `time_period` | Approximate interval | Description |
-|---------------|----------------------|-------------|
-| **0** | 4:00 AM - 8:00 AM | morning peak |
-| **1** | 8:00 AM - 12:00 PM | morning |
-| **2** | 12:00 PM - 7:00 PM | afternoon |
-| **3** | 7:00 PM - 10:00 PM | early evening |
-| **4** | 10:00 PM - 4:00 AM | late evening |
-
-These variables are included as controls because variations in ridership and congestion are likely to vary significantly depending on the time of day and day of the week. Controlling for these variables helps ensure that any relationship we observe between bunching and delay is not simply due to predictable daily patterns. 
+## Future Directions
+Due to limitations of time as well as our data set, many features which may contribute to a better predictor were not considered, and we believe it would be interesting for later projects to look at the following:
+- Additional data beyond 2024-07-30 could provide more seasonality effects, allowing for a more robust analysis of delay time, and possibly provide a model for extreme delays as well. 
+- Adding in information about alerts and interruptions on the line would be expected to improve the model further, helping narrow down exactly how influential bunching events are to predicting delays. 
+- Case studies of high traffic events such as the upcoming FIFA world cup would provide additional insight into bunching events and delays.
 
 
 
