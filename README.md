@@ -7,7 +7,9 @@ According to [this Urgency Statement](https://www.toronto.ca/legdocs/mmis/2025/t
 
 It is well known that streetcars for the TTC in particular are dreadfully slow. For example, the [following application](https://ttcleaderboard.vercel.app/) shows a live preview of streetcars in operation, as a criticism of the slow service of our vehicles. This has been on the public mindset recently, as the Fifa world cup is set to happen in Toronto this summer, [causing concerns on how the TTC will address these congestion problems](https://globalnews.ca/news/11580546/toronto-world-cup-traffic-impact/).
 
-In this project, we look at the effect of gridlocked streetcars (that we call **bunching events**) on delay time.  We focus specifically on route 506, a busy east-west streetcar line that gives a representative of traffic congestion in Toronto. 
+In this project, we look at the effect of gridlocked streetcars on delay time. We specifically look at a feature 
+that we call **bunching events**, motivated by [a pilot program by the TTC](https://www.toronto.ca/legdocs/mmis/2025/ttc/bgrd/backgroundfile-259672.pdf).
+We focus specifically on route 506, a busy east-west streetcar line that gives a representative of traffic congestion in Toronto. 
 
 ## Data Description
 
@@ -24,7 +26,10 @@ We aggregate the raw data into a daily, stop-level data set. For each (date, sto
 - `dt_short`: the total accumulated minutes of cars that were delayed between 5 minutes and 19 minutes (the 'non-extreme' delays).
 - `dt_long`: the total accumulated minutes of cars that were delayed over 19 minutes (the 'extreme' delays).
 
-Bunch and gap periods were chosen due to a recent [Pilot study](https://www.toronto.ca/legdocs/mmis/2025/ttc/bgrd/backgroundfile-259672.pdf) on these types of incidents affecting punctuality. As well, `dt_short` is chosen to account for these 'non-punctual' and 'non-extreme' delays.
+Bunch and gap periods were chosen due to the [Pilot study](https://www.toronto.
+ca/legdocs/mmis/2025/ttc/bgrd/backgroundfile-259672.pdf) mentioned in the introduction on these types of incidents  
+affecting punctuality.
+As well, `dt_short` is chosen to account for these 'non-punctual' and 'non-extreme' delays.
 
 We removed data points where there are long stretches of missing data points. We also remove extremely large gaps (longer than 2 hours), as this suggests a cancellation rather than a delay. 
  
@@ -68,7 +73,14 @@ After choosing the transformations that performed the best we applied **Lasso an
 | xgboost  | 72.0   | 0.43  |
 | ols      | 73.32  | 0.41  |
 
-Here the baseline predicts the mean delay at each stop in each direction. The Final $R^2$ score of our model came out to around 42% for both the XGBoost and linear regression model compared to 9% for a baseline model. Although predicting net delay time from just this information is quite volatile, our results demonstrate that there is some predictive power in using bunch events to predict delay times. Our RMSE also went down from the baseline by 20%, showing a tighter margin for error in those predictions best described by our model. 
+Here the baseline predicts the mean delay at each stop in each direction. The Final $R^2$ score of our model came 
+out to around 42% for both the XGBoost and linear regression model compared to 9% for a baseline model. Although 
+predicting net delay time from just this information is quite volatile, our results demonstrate that there is some 
+predictive power in using bunch events to predict delay times. Our RMSE also went down from the baseline by 20%, 
+showing a tighter margin for error in those predictions best described by our model. A plot of delay vs date of our 
+model is given below:
+![Fig. Plot of XGBoost model and test data dt_short vs date](plots/xgboost_vs_test.png)
+![Fig. Plot of linear model and test data dt_short vs date](plots/log_bunch_vs_test.png)
 
 ## Future Directions
 Due to limitations of time as well as our data set, many features which may contribute to a better predictor were not considered, and we believe it would be interesting for later projects to look at the following:
