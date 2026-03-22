@@ -27,8 +27,7 @@ We aggregate the raw data into a daily, stop-level data set. For each (date, sto
 - `dt_short`: the total accumulated minutes of cars that were delayed between 5 minutes and 19 minutes (the 'non-extreme' delays).
 - `dt_long`: the total accumulated minutes of cars that were delayed over 19 minutes (the 'extreme' delays).
 
-Bunch and gap periods were chosen due to the [Pilot study](https://www.toronto.
-ca/legdocs/mmis/2025/ttc/bgrd/backgroundfile-259672.pdf) mentioned in the introduction on these types of incidents  
+Bunch and gap periods were chosen due to the [Pilot study](https://www.toronto.ca/legdocs/mmis/2025/ttc/bgrd/backgroundfile-259672.pdf) mentioned in the introduction on these types of incidents  
 affecting punctuality.
 As well, `dt_short` is chosen to account for these 'non-punctual' and 'non-extreme' delays.
 
